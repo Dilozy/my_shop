@@ -1,8 +1,8 @@
 from django.urls import path
 from django.views.generic import TemplateView
-from rest_framework.authtoken import views as drf_views
 
 from . import views
+
 
 app_name = "users"
 
@@ -17,7 +17,6 @@ urlpatterns = [
          views.ResendActivationEmailAPIView.as_view(),
          name="resend_activation"),
     path("me/", views.RetrieveUpdateUserAPIView.as_view(), name="retrieve_update_user"),
-    path("auth-token/", drf_views.obtain_auth_token, name="obtain_auth_token"),
     path("change-password/",
          views.ChangeUserPasswordAPIView.as_view(),
          name="change_password"),
@@ -27,5 +26,5 @@ urlpatterns = [
          name="reset_password_token_verify"),
     path("reset-password-confirm/",
          views.PasswordResetConfirmAPIView.as_view(),
-         name="reset_password_confirm")
+         name="reset_password_confirm"),
 ]

@@ -24,5 +24,6 @@ urlpatterns = [
     path('admin/user/<int:user_id>/password/', 
          PasswordChangeView.as_view(), 
          name='admin_password_change'),
-    path('users/', include('user_account.urls', namespace='users'))
+    path('api/v1/users/', include('user_account.urls', namespace='users')),
+    path('api/v1/auth/', include('authentication.urls', namespace='auth')),
 ]

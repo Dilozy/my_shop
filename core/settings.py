@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_extensions',
     'user_account',
-    'rest_framework.authtoken',
+    'authentication',
 ]
 
 MIDDLEWARE = [
@@ -55,7 +55,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'src.urls'
+ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [
     {
@@ -73,7 +73,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'src.wsgi.application'
+WSGI_APPLICATION = 'core.wsgi.application'
 
 
 # Database
@@ -147,6 +147,9 @@ DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
+        'authentication.middleware.jwt_auth_middleware.JWTAuthMiddleware',
+        'rest_framework.authentication.SessionAuthentication', 
     )
 }
+
+# Redis settings

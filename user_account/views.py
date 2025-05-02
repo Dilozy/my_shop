@@ -119,9 +119,15 @@ class PasswordResetConfirmAPIView(generics.GenericAPIView):
         return Response({"detail": "Пароль успешно изменён"},
                         status=status.HTTP_200_OK)
 
-    
 
-    
+
+        
+
+
+
+
+        
+
 
 
 

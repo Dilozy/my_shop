@@ -11,7 +11,6 @@ User = get_user_model()
 class TokenValidationMixin:
     def _validate_token(self, data):
         try:
-            print(data)
             uid = force_str(urlsafe_base64_decode(data["uidb64"]))
             user = User.objects.get(pk=uid)
         except User.DoesNotExist:
