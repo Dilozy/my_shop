@@ -21,13 +21,13 @@ class EmailService:
         return base_url + f"{uid}/{token}/"
     
     @staticmethod
-    def send_confirmation_email(user):
-        endpoint = "http://127.0.0.1:8000/users/activation-confirm/"
-        confirmation_url = EmailService._create_url(user, endpoint)
+    def send_activation_email(user):
+        endpoint = "http://127.0.0.1:8000/api/v1/users/activation-confirm/"
+        activation_url = EmailService._create_url(user, endpoint)
         subject = "Активация нового аккаунта"
         html_message = render_to_string(
-            "confirmation_email.html",
-            {"user": user, "confirmation_url": confirmation_url}
+            "activation_email.html",
+            {"user": user, "activation_url": activation_url}
         )
 
         EmailService._executor.submit(
@@ -42,7 +42,7 @@ class EmailService:
 
     @staticmethod
     def send_reset_password_email(user):
-        endpoint = "http://127.0.0.1:8000/users/reset-password-token-verify/"
+        endpoint = "http://127.0.0.1:8000/api/v1/users/reset-password-token-verify/"
         reset_url = EmailService._create_url(user, endpoint)
         subject = "Сброс пароля"
         html_message = render_to_string(

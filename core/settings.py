@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'user_account',
     'authentication',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -148,7 +149,8 @@ DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authentication.middleware.jwt_auth_middleware.JWTAuthMiddleware',
-        'rest_framework.authentication.SessionAuthentication', 
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     )
 }
 

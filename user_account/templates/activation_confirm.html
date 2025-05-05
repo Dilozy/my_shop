@@ -5,7 +5,7 @@
     const uidb64 = "{{ uidb64 }}";
     const token = "{{ token }}";
     
-    fetch(`/users/activate/${uidb64}/${token}/`, {
+    fetch(`/api/v1/users/activate/${uidb64}/${token}/`, {
   method: 'PATCH',
   headers: {
     'X-CSRFToken': '{{ csrf_token }}',
@@ -25,7 +25,7 @@
   
   // Перенаправляем после успешной активации
   if (data.status || data.detail) {
-    window.location.href = '/users/';
+    window.location.href = '/api/v1/users/';
   }
 })
 .catch(error => {

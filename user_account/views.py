@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import check_password
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -17,33 +16,29 @@ User = get_user_model()
 
 class ListCreateUsersAPIView(generics.ListCreateAPIView):
     queryset = User.objects.all()
-    serializer_class = serializers.UserSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return serializers.RetrieveListUserSerializer
+        return serializers.CreateUserSerializer
 
 
-class RetrieveUpdateUserAPIView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = serializers.UserSerializer
+class RetrieveUpdateDestroyUserAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated, )
+
+    def get_serializer_class(self):
+        if self.request.method == "PUT" or self.request.method == "PATCH":
+            return serializers.UpdateUserSerializer
+        elif self.request.method == "GET":
+            return serializers.RetrieveListUserSerializer
+        else:
+            return serializers.DestroyUserSerializer
 
     def get_object(self):
         user = self.request.user
         if not user.is_active:
             raise PermissionDenied("Аккаунт не активирован")
         return user
-
-    def delete(self, request, *args, **kwargs):
-        current_password = request.data.get("current_password")
-        user = self.get_object()
-
-        if not current_password:
-            return Response({"error": "Необходимо ввести пароль"},
-                            status=status.HTTP_400_BAD_REQUEST)
-        
-        if not check_password(current_password, user.password):
-            return Response({"error": "Неверный пароль"},
-                             status=status.HTTP_400_BAD_REQUEST)
-        
-        self.perform_destroy(user)
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def perform_destroy(self, instance):
         Token.objects.filter(user=instance).delete()
@@ -69,18 +64,6 @@ class ResendActivationEmailAPIView(APIView):
         else:
             return Response({"error": "Аккаунт пользователя уже активирован"},
                             status=status.HTTP_400_BAD_REQUEST)
-
-
-class ChangeUserPasswordAPIView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = serializers.ChangeUserPasswordSerializer
-    permission_classes = (IsAuthenticated, )
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"detail": "Пароль успешно изменён"}, status=status.HTTP_200_OK)
 
 
 class PasswordResetAPIView(generics.GenericAPIView):
@@ -118,20 +101,3 @@ class PasswordResetConfirmAPIView(generics.GenericAPIView):
         serializer.save()
         return Response({"detail": "Пароль успешно изменён"},
                         status=status.HTTP_200_OK)
-
-
-
-        
-
-
-
-
-        
-
-
-
-
-
-
-
-
