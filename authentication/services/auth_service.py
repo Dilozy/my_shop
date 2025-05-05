@@ -18,7 +18,7 @@ class AuthService:
         """Создаёт новый refresh-токен"""
         token_obj = RefreshToken.objects.create(
             user=user,
-            expires_at = timezone.now() + timedelta(days=7)
+            expires_at=timezone.now() + timedelta(days=7)
             )
         return token_obj.token
 
