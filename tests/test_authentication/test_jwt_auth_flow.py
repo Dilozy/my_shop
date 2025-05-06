@@ -45,7 +45,7 @@ class TestJWTFlow:
         assert refresh_token == db_refresh_token.token, "Несоответствие refresh token"
 
     def test_refresh_jwt_flow(self, api_client, test_user, auth_tokens):
-        curr_refresh_token = auth_tokens.get("refresh_token")
+        curr_refresh_token = auth_tokens.get("refresh_token").token
         assert curr_refresh_token is not None, "Access token отсутствует в ответе"
 
         response_refresh = api_client.post(
@@ -85,7 +85,7 @@ class TestJWTFlow:
         assert response_data.get("detail") is not None, "Неверный формат ответа"
         assert response_data.get("detail") == "Произведен выход из системы"
 
-        assert RefreshToken.objects.get(token=auth_tokens["refresh_token"]).is_revoked
+        assert RefreshToken.objects.get(token=auth_tokens["refresh_token"].token).is_revoked
 
         _, _, payload = AuthService.decode_access_token(auth_tokens["access_token"])
         assert is_blacklisted(payload["jti"])
