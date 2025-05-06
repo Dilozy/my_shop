@@ -1,5 +1,8 @@
 import pytest
 from django.contrib.auth import get_user_model
+from django.urls import reverse
+
+from authentication.models import RefreshToken
 
 
 User = get_user_model()
@@ -17,3 +20,27 @@ def test_user():
     user.set_password("test_password")
     user.save()
     return user
+
+
+@pytest.fixture()
+def auth_tokens(api_client, test_user):
+    credentials = {
+        "username": test_user.phone_number,
+        "password": "test_password"
+    }
+    
+    response = api_client.post(
+        reverse("auth:obtain_jwt"),
+        data=credentials,
+        format="json"
+    )
+    
+    assert response.status_code == 200, (
+        f"Ошибка аутентификации. Ответ: {response.json()}"
+    )
+    
+    
+    response_data = response.json()
+    response_data["refresh_token"] = RefreshToken.objects.get(token=response_data["refresh_token"])
+    
+    return response_data

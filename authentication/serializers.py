@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 
-from .services.jwt_service import JWT
 from .services.auth_service import AuthService, RefreshTokenExpired
 from .models import RefreshToken
 
@@ -26,8 +25,8 @@ class CreateJWTSerializer(serializers.Serializer):
     def save(self):
         user = self.validated_data["user"]
         refresh_token = AuthService.create_refresh_token(user)
-        access_token = JWT.create_access_token(user)
-        return access_token, refresh_token
+        access_token = AuthService.create_access_token(user)
+        return access_token, refresh_token.token
 
 
 class RefreshJWTSerializer(serializers.Serializer):
@@ -53,9 +52,9 @@ class RefreshJWTSerializer(serializers.Serializer):
 
     def save(self):
         user = self.validated_data["user"]
-        refresh_token = self.validated_data["refresh_token_obj"]
+        refresh_token_obj = self.validated_data["refresh_token_obj"]
         try:
-            new_access = AuthService.refresh_access_token(user, refresh_token)
+            new_access = AuthService.refresh_access_token(user, refresh_token_obj)
             return new_access
         except RefreshTokenExpired:
             raise

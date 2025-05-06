@@ -5,7 +5,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from ..services.jwt_service import JWT
+from ..services.auth_service import AuthService
 from ..utils import is_blacklisted
 
 
@@ -26,7 +26,7 @@ class JWTAuthMiddleware(BaseAuthentication):
         except (IndexError, ValueError):
             return None
 
-        sig, expected_sig, payload = JWT.decode_access_token(token)
+        sig, expected_sig, payload = AuthService.decode_access_token(token)
         self.verify_access_token(sig, expected_sig, payload)
 
         if is_blacklisted(payload.get("jti")):

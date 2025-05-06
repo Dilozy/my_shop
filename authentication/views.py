@@ -4,8 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from . import serializers
-from .services.auth_service import RefreshTokenExpired
-from .services.jwt_service import JWT
+from .services.auth_service import RefreshTokenExpired, AuthService
 from .utils import add_to_blacklist
 from .models import RefreshToken
 
@@ -38,7 +37,7 @@ class UserLogoutAPIView(APIView):
     def post(self, request):
         auth_header = request.headers.get("Authorization")
         access_token = auth_header.split()[1]
-        _, _, payload = JWT.decode_access_token(access_token)
+        _, _, payload = AuthService.decode_access_token(access_token)
         username = payload.get("username")
         
         add_to_blacklist(payload.get("jti"), payload.get("exp"))

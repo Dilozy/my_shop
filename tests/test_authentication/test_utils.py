@@ -1,14 +1,14 @@
 import pytest
 
-from authentication.services.jwt_service import JWT
+from authentication.services.auth_service import AuthService
 from authentication.utils import add_to_blacklist, is_blacklisted
 
 
 @pytest.mark.django_db
 class TestUtils:
     def test_blacklist(self, test_user):
-        access_token = JWT.create_access_token(test_user)
-        _, _, payload = JWT.decode_access_token(access_token)
+        access_token = AuthService.create_access_token(test_user)
+        _, _, payload = AuthService.decode_access_token(access_token)
 
         token_jti = payload.get("jti")
         token_exp = payload.get("exp")

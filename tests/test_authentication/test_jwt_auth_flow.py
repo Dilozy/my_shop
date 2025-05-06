@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
-from authentication.services.jwt_service import JWT
+from authentication.services.auth_service import AuthService
 from authentication.models import RefreshToken
 from authentication.utils import is_blacklisted
 
@@ -24,36 +24,17 @@ class TestJWTFlow:
     @property
     def logout_endpoint(self):
         return reverse("auth:logout")
-    
-    @pytest.fixture()
-    def auth_tokens(self, api_client, test_user):
-        credentials = {
-            "username": test_user.phone_number,
-            "password": "test_password"
-        }
-        
-        response = api_client.post(
-            self.obtain_jwt_endpoint,
-            data=credentials,
-            format="json"
-        )
-        
-        assert response.status_code == 200, (
-            f"Ошибка аутентификации. Ответ: {response.json()}"
-        )
-        
-        return response.json()
 
     def test_create_jwt_flow(self, test_user, auth_tokens):
         access_token = auth_tokens.get("access_token")
         assert access_token, "Access token отсутствует в ответе"
         
-        sig, expected_sig, payload = JWT.decode_access_token(access_token)
+        sig, expected_sig, payload = AuthService.decode_access_token(access_token)
         assert sig == expected_sig, "Невалидная подпись токена"
         assert payload["username"] == test_user.phone_number, "Неверный username в payload"
         assert payload["email"] == test_user.email, "Неверный email в payload"
         
-        refresh_token = auth_tokens.get("refresh_token")
+        refresh_token = auth_tokens.get("refresh_token").token
         assert refresh_token, "Refresh token отсутствует в ответе"
         
         db_refresh_token = RefreshToken.objects.filter(
@@ -85,7 +66,7 @@ class TestJWTFlow:
 
         new_access_token = response_refresh_data.get("access_token")
 
-        sig, expected_sig, payload = JWT.decode_access_token(new_access_token)
+        sig, expected_sig, payload = AuthService.decode_access_token(new_access_token)
         assert sig == expected_sig, "Невалидная подпись токена"
         assert payload["username"] == test_user.phone_number, "Неверный username в payload"
         assert payload["email"] == test_user.email, "Неверный email в payload"
@@ -106,7 +87,7 @@ class TestJWTFlow:
 
         assert RefreshToken.objects.get(token=auth_tokens["refresh_token"]).is_revoked
 
-        _, _, payload = JWT.decode_access_token(auth_tokens["access_token"])
+        _, _, payload = AuthService.decode_access_token(auth_tokens["access_token"])
         assert is_blacklisted(payload["jti"])
         assert payload.get("username") == test_user.phone_number
 
