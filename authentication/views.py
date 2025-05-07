@@ -15,7 +15,8 @@ class CreateJWTAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         access_token, refresh_token = serializer.save()
         return Response({"access_token": access_token,
-                         "refresh_token": refresh_token})
+                         "refresh_token": refresh_token},
+                         status=status.HTTP_201_CREATED)
 
 
 class RefreshJWTAPIView(APIView):
@@ -24,7 +25,7 @@ class RefreshJWTAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         try:
             access_token = serializer.save()
-            return Response({"access_token": access_token})
+            return Response({"access_token": access_token}, status=status.HTTP_201_CREATED)
         except RefreshTokenExpired as err:
             return Response(
                 {"error": str(err)}, status=status.HTTP_401_UNAUTHORIZED
@@ -36,6 +37,7 @@ class UserLogoutAPIView(APIView):
     
     def post(self, request):
         auth_header = request.headers.get("Authorization")
+
         access_token = auth_header.split()[1]
         _, _, payload = AuthService.decode_access_token(access_token)
         username = payload.get("username")

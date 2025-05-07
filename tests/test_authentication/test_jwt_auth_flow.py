@@ -54,7 +54,7 @@ class TestJWTFlow:
             format="json"
         )
 
-        assert response_refresh.status_code == 200, (
+        assert response_refresh.status_code == 201, (
             f"Ошибка. Ответ: {response_refresh.json()}"
         )
 
@@ -71,10 +71,8 @@ class TestJWTFlow:
         assert payload["username"] == test_user.phone_number, "Неверный username в payload"
         assert payload["email"] == test_user.email, "Неверный email в payload"
 
-    def test_destroy_jwt_flow(self, api_client, test_user, auth_tokens):
-        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {auth_tokens['access_token']}")
-
-        response = api_client.post(
+    def test_destroy_jwt_flow(self, authorized_api_client, test_user, auth_tokens):
+        response = authorized_api_client.post(
             self.logout_endpoint
         )
         assert response.status_code == 200, (

@@ -54,7 +54,10 @@ class AuthService:
         ).digest()
         expected_sig_b64 = AuthService._base64url_encode(expected_sig)
 
-        payload_json = base64.urlsafe_b64decode(payload_b64 + "=" * (-len(payload_b64) % 4)).decode()
+        payload_json = base64.urlsafe_b64decode(
+            payload_b64 + "=" * (-len(payload_b64) % 4)
+            ).decode()
+
         payload = json.loads(payload_json)
 
         return signature_b64, expected_sig_b64, payload

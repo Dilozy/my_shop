@@ -30,7 +30,7 @@ class JWTAuthMiddleware(BaseAuthentication):
         self.verify_access_token(sig, expected_sig, payload)
 
         if is_blacklisted(payload.get("jti")):
-            raise AuthenticationFailed("Токен был отозван")
+            raise AuthenticationFailed({"error": "Токен был отозван"})
         
         user = User.objects.filter(phone_number=payload.get("username")).first()
         
@@ -41,8 +41,8 @@ class JWTAuthMiddleware(BaseAuthentication):
 
     def verify_access_token(self, sig, expected_sig, payload):
         if not hmac.compare_digest(sig, expected_sig):
-            raise AuthenticationFailed("Неверная сигнатура токена")
+            raise AuthenticationFailed({"error": "Неверная сигнатура токена"})
         
         if int(timezone.now().timestamp()) > payload.get("exp"):
-            raise AuthenticationFailed("Токен просрочен")
+            raise AuthenticationFailed({"error": "Токен просрочен"})
         

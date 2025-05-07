@@ -35,12 +35,21 @@ def auth_tokens(api_client, test_user):
         format="json"
     )
     
-    assert response.status_code == 200, (
+    assert response.status_code == 201, (
         f"Ошибка аутентификации. Ответ: {response.json()}"
     )
-    
     
     response_data = response.json()
     response_data["refresh_token"] = RefreshToken.objects.get(token=response_data["refresh_token"])
     
     return response_data
+
+@pytest.fixture
+def authorized_api_client(api_client, auth_tokens):
+    """
+    Возвращает api_client с установленным access-токеном.
+    """
+    api_client.credentials(
+        HTTP_AUTHORIZATION=f"Bearer {auth_tokens['access_token']}"
+    )
+    return api_client
