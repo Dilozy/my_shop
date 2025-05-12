@@ -6,10 +6,11 @@ from .manager import UserManager
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(max_length=255, verbose_name="E-mail")
     phone_regex = RegexValidator(regex=r"^((\+7)|8)\d{10}$",
-                                 message="Номер телефона должен быть в формате +79999999999 или /"
+                                 message="Номер телефона должен быть в формате +79999999999 или " \
                                  "89999999999")
+    
+    email = models.EmailField(max_length=255, verbose_name="E-mail")
     phone_number = models.CharField(validators=[phone_regex],
                                     max_length=12,
                                     unique=True,
@@ -35,7 +36,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     @property
     def username(self):
-        return self.get_full_name()
+        return self.phone_number
     
     def get_full_name(self):
         return f"{self.last_name} {self.first_name}"
