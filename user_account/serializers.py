@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import check_password
 
 from .services.email_service import EmailService
 from .mixins import URLValidationMixin
+from authentication.models import RefreshToken
 
 
 User = get_user_model()
@@ -119,7 +120,7 @@ class ActivateUserSerializer(serializers.Serializer, URLValidationMixin):
         user.save()
         return user
 
-class TokenValidationSerializer(serializers.Serializer, URLValidationMixin):
+class URLValidationSerializer(serializers.Serializer, URLValidationMixin):
     uidb64 = serializers.CharField()
     token = serializers.CharField()
 
@@ -127,31 +128,27 @@ class TokenValidationSerializer(serializers.Serializer, URLValidationMixin):
         return self._validate_url(data)
         
         
-class PasswordResetConfirmSerializer(serializers.Serializer):
-    login = serializers.CharField(label="Имя пользователя")
-    is_token_valid = serializers.BooleanField()
+class PasswordResetConfirmSerializer(serializers.Serializer, URLValidationMixin):
+    uidb64 = serializers.CharField()
+    token = serializers.CharField()
     new_password = serializers.CharField(write_only=True,
                                          label="Новый пароль")
     re_new_password = serializers.CharField(write_only=True,
                                             label="Повторите новый пароль")
 
     def validate(self, data):
-        if not data.get("is_token_valid"):
-            raise serializers.ValidationError({"error": "Передан невалидный токен"})
+        data = self._validate_url(data)
 
         if data.get("new_password") != data.get("re_new_password"):
             raise serializers.ValidationError({"error": "Пароли не совпадают"})
         
-        user = User.objects.get(phone_number=data["login"])
-        data["user"] = user
         return data
 
     def save(self):
         user = self.validated_data["user"]
         user.set_password(self.validated_data["new_password"])
         user.save()
+
+        RefreshToken.objects.filter(user=user, is_revoked=False).update(is_revoked=True)
+
         return user
- 
-
-
-

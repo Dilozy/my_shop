@@ -42,7 +42,7 @@ class EmailService:
 
     @staticmethod
     def send_reset_password_email(user):
-        endpoint = "http://127.0.0.1:8000/api/v1/users/reset-password-token-verify/"
+        endpoint = "http://127.0.0.1:8000/api/v1/users/reset-password-confirm/"
         reset_url = EmailService._create_url(user, endpoint)
         subject = "Сброс пароля"
         html_message = render_to_string(

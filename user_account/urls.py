@@ -20,10 +20,7 @@ urlpatterns = [
          views.RetrieveUpdateDestroyUserAPIView.as_view(),
          name="retrieve_update_user"),
     path("reset-password/", views.PasswordResetAPIView.as_view(), name="reset_password"),
-    path("reset-password-token-verify/<str:uidb64>/<str:token>/",
-         views.PasswordResetTokenVerifyAPIView.as_view(),
-         name="reset_password_token_verify"),
-    path("reset-password-confirm/",
+    path("reset-password-confirm/<str:uidb64>/<str:token>/",
          views.PasswordResetConfirmAPIView.as_view(),
          name="reset_password_confirm"),
 ]

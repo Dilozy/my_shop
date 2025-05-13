@@ -48,7 +48,7 @@ class RefreshJWTSerializer(serializers.Serializer):
             return data
                 
         except RefreshToken.DoesNotExist:
-            raise serializers.ValidationError({"error": "Токен не найден"})
+            raise serializers.ValidationError({"error": "Токен не найден или был отозван"})
 
     def save(self):
         user = self.validated_data["user"]
