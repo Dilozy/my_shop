@@ -78,7 +78,8 @@ class PasswordResetAPIView(generics.GenericAPIView):
 
 class PasswordResetTokenVerifyAPIView(APIView):
     def get(self, request, uidb64, token):
-        serializer = serializers.TokenValidationSerializer(data={"uidb64": uidb64, "token": token})
+        serializer = serializers.TokenValidationSerializer(data={"uidb64": uidb64,
+                                                                 "token": token})
         
         if not serializer.is_valid():
             return Response(
@@ -88,7 +89,7 @@ class PasswordResetTokenVerifyAPIView(APIView):
             
         return Response({
             "valid": True,
-            "username": serializer.validated_data["user"].phone_number
+            "user": serializer.validated_data["user"].phone_number
         })
     
 

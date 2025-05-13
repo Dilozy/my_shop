@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
 
 from .services.email_service import EmailService
-from .mixins import TokenValidationMixin
+from .mixins import URLValidationMixin
 
 
 User = get_user_model()
@@ -21,18 +21,15 @@ class CreateUserSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-        if data.get("password_confirm") is None:
-            raise serializers.ValidationError("Необходимо подтвердить пароль")
-        
         if data["password"] != data["password_confirm"]:
             raise serializers.ValidationError("Пароли не совпадают")
     
         return data
 
-    def create(self, validated_data):
-        validated_data.pop("password_confirm")
-        user = User.objects.create_user(**validated_data)
-        EmailService.send_activation_email(user)
+    def save(self):
+        self.validated_data.pop("password_confirm", None)
+        user = User.objects.create_user(**self.validated_data)
+        #EmailService.send_activation_email(user)
         return user
 
 
@@ -55,7 +52,7 @@ class UpdateUserSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Необходимо подтвердить пароль")
         
             if data["password"] != data["password_confirm"]:
-                    raise serializers.ValidationError("Пароли не совпадают")
+                raise serializers.ValidationError("Пароли не совпадают")
     
         return data
 
@@ -86,10 +83,7 @@ class DestroyUserSerializer(serializers.Serializer):
 
     def validate(self, data):
         current_password = data.get("current_password")
-        
-        if not current_password:
-            raise serializers.ValidationError({"error": "Необходимо ввести пароль"})
-        
+
         if not check_password(current_password, self.context.get("request").user.password):
             raise serializers.ValidationError({"error": "Неверный пароль"})
 
@@ -112,13 +106,12 @@ class PasswordResetSerializer(serializers.Serializer):
         EmailService.send_reset_password_email(user)
 
 
-class ActivateUserSerializer(serializers.Serializer, TokenValidationMixin):
+class ActivateUserSerializer(serializers.Serializer, URLValidationMixin):
     uidb64 = serializers.CharField()
     token = serializers.CharField()
     
     def validate(self, data):
-        print(data)
-        return self._validate_token(data)
+        return self._validate_url(data)
     
     def save(self):
         user = self.validated_data["user"]
@@ -126,12 +119,12 @@ class ActivateUserSerializer(serializers.Serializer, TokenValidationMixin):
         user.save()
         return user
 
-class TokenValidationSerializer(serializers.Serializer, TokenValidationMixin):
+class TokenValidationSerializer(serializers.Serializer, URLValidationMixin):
     uidb64 = serializers.CharField()
     token = serializers.CharField()
 
     def validate(self, data):
-        return self._validate_token(data)
+        return self._validate_url(data)
         
         
 class PasswordResetConfirmSerializer(serializers.Serializer):

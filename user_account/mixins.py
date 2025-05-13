@@ -8,18 +8,23 @@ from django.contrib.auth.tokens import default_token_generator
 User = get_user_model()
 
 
-class TokenValidationMixin:
-    def _validate_token(self, data):
-        try:
-            uid = force_str(urlsafe_base64_decode(data["uidb64"]))
-            user = User.objects.get(pk=uid)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("Неверная ссылка активации.")
-
-        if not default_token_generator.check_token(user, data["token"]):
-            raise serializers.ValidationError(
-                "Срок действия ссылки истёк или она недействительна."
-                )
-
+class URLValidationMixin:
+    def _validate_url(self, data):
+        user = self.__validate_uidb64(data["uidb64"])
+        self.__validate_token(user, data["token"])
         data["user"] = user
         return data
+
+    def __validate_uidb64(self, uidb64):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+            return user
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Пользователь не найден")
+    
+    def __validate_token(self, user, token):
+        if not default_token_generator.check_token(user, token):
+            raise serializers.ValidationError(
+                "Токен некорректен или недействителен"
+                )
