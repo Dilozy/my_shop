@@ -30,7 +30,7 @@ class EmailService:
             {"user": user, "activation_url": activation_url}
         )
 
-        EmailService._executor.submit(
+        return EmailService._executor.submit(
             send_mail,
             subject=subject,
             message="",
@@ -50,7 +50,7 @@ class EmailService:
             {"user": user, "reset_url": reset_url}
         )
 
-        EmailService._executor.submit(
+        return EmailService._executor.submit(
             send_mail,
             subject=subject,
             message="",

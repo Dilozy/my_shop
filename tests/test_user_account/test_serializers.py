@@ -4,6 +4,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
+from django.contrib.auth.hashers import check_password
 from rest_framework.serializers import ValidationError
 
 from user_account import serializers as user_serializers
@@ -288,5 +289,67 @@ class TestActivateUserSerializer:
         data = get_data(activation_credentials)
         serializer = user_serializers.ActivateUserSerializer(data=data)
 
+        with pytest.raises(ValidationError, match=expected_error):
+            serializer.is_valid(raise_exception=True)
+
+
+@pytest.mark.django_db
+class TestPasswordResetConfirmSerializer:
+    @pytest.fixture
+    def reset_credentials(self, test_user):
+        base_endpoint = "http://127.0.0.1:8000/api/v1/users/reset-password-confirm/"
+        endpoint = EmailService._create_url(test_user, base_endpoint) \
+                               .rstrip("/").split("/")
+        
+        return {"uidb64": endpoint[-2], "token": endpoint[-1]}
+    
+    def test_serializer_with_valid_data(self, reset_credentials):
+        data = {"new_password": "test_password2",
+                "re_new_password": "test_password2",
+                **reset_credentials}
+        
+        serializer = user_serializers.PasswordResetConfirmSerializer(data=data)
+        assert serializer.is_valid()
+        
+        updated_user = serializer.save()
+        assert check_password("test_password2", updated_user.password), (
+            "Пароль был изменен некорректно"
+            )
+
+    @pytest.mark.parametrize("get_data, expected_error", [
+        (
+            lambda rc: {}, "This field is required"
+        ),
+        (
+            lambda rc: {
+                "uidb64": rc["uidb64"],
+                "token": rc["token"],
+                "new_password": "test_password3",
+                "re_new_password": "test_password4"
+            },
+            "Пароли не совпадают"
+        ),
+        (
+            lambda rc: {
+                "uidb64": urlsafe_base64_encode(force_bytes(100_000_000)),
+                "token": rc["token"],
+                "new_password": "test_password3",
+                "re_new_password": "test_password3"
+            },
+            "Пользователь не найден"
+        ),
+        (
+            lambda rc: {
+                "uidb64": rc["uidb64"],
+                "token": rc["token"] + "ff",
+                "new_password": "test_password3",
+                "re_new_password": "test_password3"
+            },
+            "Токен некорректен или недействителен"
+        )
+    ])
+    def test_serializer_with_invalid_data(self, get_data, expected_error, reset_credentials):
+        data = get_data(reset_credentials)
+        serializer = user_serializers.PasswordResetConfirmSerializer(data=data)
         with pytest.raises(ValidationError, match=expected_error):
             serializer.is_valid(raise_exception=True)
