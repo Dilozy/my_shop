@@ -2,13 +2,11 @@ import requests
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import generics
-from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.serializers import ValidationError
 
 from . import serializers
 from .services.email_service import EmailService

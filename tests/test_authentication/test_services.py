@@ -1,6 +1,5 @@
 import pytest
 import hmac
-import uuid
 
 from authentication.services.auth_service import AuthService, RefreshTokenExpired
 from authentication.models import RefreshToken

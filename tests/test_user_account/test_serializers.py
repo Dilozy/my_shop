@@ -8,7 +8,6 @@ from django.contrib.auth.hashers import check_password
 from rest_framework.serializers import ValidationError
 
 from user_account import serializers as user_serializers
-from user_account.services.email_service import EmailService
 
 
 User = get_user_model()
