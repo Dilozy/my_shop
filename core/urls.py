@@ -17,7 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth.views import PasswordChangeView
+from django.http import JsonResponse
 
+
+def custom_404(request, exception=None):
+    return JsonResponse({'error': ['Not found.']}, status=404)
+
+handler404 = 'core.urls.custom_404'
 
 urlpatterns = [
     path('admin/', admin.site.urls),

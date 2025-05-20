@@ -23,14 +23,14 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data["password"] != data["password_confirm"]:
-            raise serializers.ValidationError("Пароли не совпадают")
+            raise serializers.ValidationError({"password": "Пароли не совпадают"})
     
         return data
 
     def save(self):
         self.validated_data.pop("password_confirm", None)
         user = User.objects.create_user(**self.validated_data)
-        #EmailService.send_activation_email(user)
+        EmailService.send_activation_email(user)
         return user
 
 
@@ -53,7 +53,7 @@ class UpdateUserSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Необходимо подтвердить пароль")
         
             if data["password"] != data["password_confirm"]:
-                raise serializers.ValidationError("Пароли не совпадают")
+                raise serializers.ValidationError({"password": "Пароли не совпадают"})
     
         return data
 
@@ -68,6 +68,12 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         
         instance.save()
         return instance
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if hasattr(self, "validated_data"):
+            return self.validated_data
+        return data
 
 
 class RetrieveListUserSerializer(serializers.ModelSerializer):
@@ -86,7 +92,7 @@ class DestroyUserSerializer(serializers.Serializer):
         current_password = data.get("current_password")
 
         if not check_password(current_password, self.context.get("request").user.password):
-            raise serializers.ValidationError({"error": "Неверный пароль"})
+            raise serializers.ValidationError({"current_password": "Неверный пароль"})
 
         return data
 
@@ -94,17 +100,18 @@ class DestroyUserSerializer(serializers.Serializer):
 class PasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField(label="Email")
 
-    def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
-            return value
-        raise serializers.ValidationError(
-            {"error": "Пользователя с таким email не существует"}
-            )
-    
+    def validate(self, data):
+        try:
+            user = User.objects.get(email=data["email"])
+        except User.DoesNotExist:
+            raise serializers.ValidationError(
+                {"email": "Пользователя с таким email не существует"}
+                )
+        data["user"] = user
+        return data
+        
     def save(self):
-        validated_email = self.validated_data["email"]
-        user = User.objects.get(email=validated_email)
-        EmailService.send_reset_password_email(user)
+        EmailService.send_reset_password_email(self.validated_data["user"])
 
 
 class ActivateUserSerializer(serializers.Serializer, URLValidationMixin):
@@ -112,13 +119,31 @@ class ActivateUserSerializer(serializers.Serializer, URLValidationMixin):
     token = serializers.CharField()
     
     def validate(self, data):
-        return self._validate_url(data)
+        data = self._validate_url(data)
+        if data["user"].is_active:
+            raise serializers.ValidationError({"error": "Этот пользователь уже активирован"})
+        return data
     
     def save(self):
         user = self.validated_data["user"]
         user.is_active = True
         user.save()
         return user
+    
+class ResendActivationEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate(self, data):
+        try:
+            user = User.objects.get(email=data["email"])
+        except User.DoesNotExist:
+            raise serializers.ValidationError({"email": "Пользователь не найден"})
+        
+        if user.is_active:
+            raise serializers.ValidationError({"email": "Пользователь уже был активирован"})
+        data["user"] = user
+        return data
+
 
 class URLValidationSerializer(serializers.Serializer, URLValidationMixin):
     uidb64 = serializers.CharField()
@@ -140,7 +165,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer, URLValidationMixin)
         data = self._validate_url(data)
 
         if data.get("new_password") != data.get("re_new_password"):
-            raise serializers.ValidationError({"error": "Пароли не совпадают"})
+            raise serializers.ValidationError({"password": "Пароли не совпадают"})
         
         return data
 

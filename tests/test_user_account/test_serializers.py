@@ -234,29 +234,6 @@ class TestPasswordResetSerializer:
 
 @pytest.mark.django_db
 class TestActivateUserSerializer:
-    @property
-    def base_endpoint(self):
-        return "http://127.0.0.1:8000/api/v1/users/activation-confirm/"
-    
-    @pytest.fixture
-    def test_user_not_activated(self):
-        user = User.objects.create(
-            email="JohnSmith@test.com",
-            phone_number="+75555555555",
-            first_name="John",
-            last_name="Smith"
-        )
-        user.set_password("test_password")
-        user.save()
-        return user
-
-    @pytest.fixture
-    def activation_credentials(self, test_user_not_activated):
-        endpoint = EmailService._create_url(test_user_not_activated, self.base_endpoint) \
-                               .rstrip("/").split("/")
-        
-        return {"uidb64": endpoint[-2], "token": endpoint[-1]}
-
     def test_serializer_with_valid_data(self, activation_credentials):
         serializer = user_serializers.ActivateUserSerializer(data=activation_credentials)
         assert serializer.is_valid()
@@ -295,14 +272,6 @@ class TestActivateUserSerializer:
 
 @pytest.mark.django_db
 class TestPasswordResetConfirmSerializer:
-    @pytest.fixture
-    def reset_credentials(self, test_user):
-        base_endpoint = "http://127.0.0.1:8000/api/v1/users/reset-password-confirm/"
-        endpoint = EmailService._create_url(test_user, base_endpoint) \
-                               .rstrip("/").split("/")
-        
-        return {"uidb64": endpoint[-2], "token": endpoint[-1]}
-    
     def test_serializer_with_valid_data(self, reset_credentials):
         data = {"new_password": "test_password2",
                 "re_new_password": "test_password2",

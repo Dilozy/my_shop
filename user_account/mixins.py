@@ -21,10 +21,10 @@ class URLValidationMixin:
             user = User.objects.get(pk=uid)
             return user
         except User.DoesNotExist:
-            raise serializers.ValidationError("Пользователь не найден")
+            raise serializers.ValidationError({"uidb64": "Пользователь не найден"})
     
     def __validate_token(self, user, token):
         if not default_token_generator.check_token(user, token):
-            raise serializers.ValidationError(
-                "Токен некорректен или недействителен"
-                )
+            raise serializers.ValidationError({
+                "token": "Токен некорректен или недействителен"
+                })
