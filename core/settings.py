@@ -44,6 +44,9 @@ INSTALLED_APPS = [
     'user_account',
     'authentication',
     'rest_framework.authtoken',
+    'goods',
+    'django_filters',
+    'cart',
 ]
 
 MIDDLEWARE = [

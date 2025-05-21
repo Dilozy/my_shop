@@ -32,4 +32,5 @@ urlpatterns = [
          name='admin_password_change'),
     path('api/v1/users/', include('user_account.urls', namespace='users')),
     path('api/v1/auth/', include('authentication.urls', namespace='auth')),
+    path('api/v1/', include('goods.urls', namespace='goods')),
 ]
