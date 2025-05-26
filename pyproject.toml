@@ -1,0 +1,27 @@
+[project]
+name = "my-shop"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "dilozy",email = "denfil228@yandex.ru"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "django (>=5.1.7,<6.0.0)",
+    "djangorestframework (>=3.16.0,<4.0.0)",
+    "psycopg[binary] (>=3.2.6,<4.0.0)",
+    "django-extensions (>=3.2.3,<4.0.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)",
+    "django-redis (>=5.4.0,<6.0.0)",
+    "pytest (>=8.3.5,<9.0.0)",
+    "model-bakery (>=1.20.4,<2.0.0)",
+    "pytest-django (>=4.11.1,<5.0.0)",
+    "requests (>=2.32.3,<3.0.0)",
+    "django-filter (>=25.1,<26.0)",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
