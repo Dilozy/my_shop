@@ -1,20 +1,25 @@
 import uuid
 
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.db import models
 
 from goods.models import Product
 
 
-User = get_user_model()
-
-
 class Cart(models.Model):
-    cart_id = models.UUIDField(primary_key=True, default=uuid.uuid4(),
+    cart_id = models.UUIDField(primary_key=True, default=uuid.uuid4,
                                unique=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE,
+                                null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def total_price(self):
+        return sum(
+            item.product.price * item.quantity
+            for item in self.items.select_related("product").all()
+        )
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")

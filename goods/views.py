@@ -14,7 +14,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.select_related("category").all()
     serializer_class = serializers.ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["category__slug", "price", "available"]
+    filterset_fields = ["category", "price", "available"]
     search_fields = ["name", "description"]
     ordering_fields = ["price", "created_at"]
     pagination_class = ProductsPagination

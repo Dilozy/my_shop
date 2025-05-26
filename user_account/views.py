@@ -50,7 +50,7 @@ class RetrieveUpdateDestroyUserAPIView(generics.RetrieveUpdateDestroyAPIView):
             raise PermissionDenied("Аккаунт не активирован")
         return user
 
-    def delete(self, request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(
             data=request.data, 

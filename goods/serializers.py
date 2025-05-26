@@ -4,10 +4,16 @@ from .models import Product, Category
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    category = serializers.StringRelatedField()
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all()
+        )
+    category_name = serializers.StringRelatedField(source="category",
+                                                   read_only=True)
+    
     class Meta:
         model = Product
-        fields = "__all__"
+        fields = ["name", "category", "description",
+                  "price", "available", "category_name"]
 
 
 class CategorySerializer(serializers.ModelSerializer):
