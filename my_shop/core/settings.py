@@ -52,12 +52,12 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'cart.middleware.CartMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'cart.middleware.CartMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -152,7 +152,7 @@ DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'authentication.middleware.jwt_auth_middleware.JWTAuthMiddleware',
+        'authentication.auth.jwt_authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ),

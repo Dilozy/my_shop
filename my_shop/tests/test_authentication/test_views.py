@@ -139,7 +139,7 @@ class TestUserLogoutAPIView:
         assert response.status_code == 403
 
         errors = response.json()
-        assert errors.get("error") == "Неверная сигнатура токена"
+        assert errors.get("token") == "Неверная сигнатура токена"
 
         api_client.credentials(
             HTTP_AUTHORIZATION=auth_tokens["access_token"]

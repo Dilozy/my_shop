@@ -1,16 +1,14 @@
 from .models import Cart, CartItem
 
 
-def get_or_create_cart(request):
-    user = request.user
-    
+def get_or_create_cart(user, cookies):
     if user.is_authenticated:
         cart, _ = Cart.objects.get_or_create(user=user,
                                              defaults={"user": user})
         
     else:
-        cart_id = request.COOKIES.get("cart_id")
-        if cart_id is None:
+        cart_id = cookies.get("cart_id")
+        if not cart_id:
             cart = Cart.objects.create()
         else:
             cart, _ = Cart.objects.get_or_create(cart_id=cart_id, user__isnull=True,
@@ -20,12 +18,11 @@ def get_or_create_cart(request):
 
 
 def add_item_to_cart(cart, target_product):
-    cart_item, created = CartItem.objects.select_related("product") \
-                                 .get_or_create(cart=cart, product=target_product,
-                                                defaults={"cart": cart,
-                                                          "product": target_product
-                                                          }
-                                                            )
+    cart_item, created = CartItem.objects.get_or_create(cart=cart,
+                                                        product=target_product,
+                                                        defaults={"cart": cart,
+                                                                  "product": target_product}
+                                                        )
     if not created:
         cart_item.quantity += 1
         cart_item.save()
@@ -33,9 +30,9 @@ def add_item_to_cart(cart, target_product):
     return cart_item
 
 
-def synchronize_carts(request):
-    guest_cart = Cart.objects.get(pk=request.COOKIES.get("cart_id"))
-    user_cart = get_or_create_cart(request)
+def synchronize_carts(user, cookies):
+    guest_cart = Cart.objects.get(pk=cookies.get("cart_id"))
+    user_cart = get_or_create_cart(user, cookies)
 
     user_items = {item.product.pk: item for item in 
                  CartItem.objects.select_related("product").filter(cart=user_cart)}

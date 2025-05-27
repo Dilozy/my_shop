@@ -4,7 +4,7 @@ from rest_framework import status
 
 from .models import Cart, CartItem
 from . import serializers
-from .services import get_or_create_cart, clear_cart, synchronize_carts
+from .services import get_or_create_cart, clear_cart
 from .permission import IsCartOwner
 
 
@@ -14,7 +14,9 @@ class CartAPIView(generics.RetrieveDestroyAPIView):
     permission_classes = [IsCartOwner]
 
     def get_object(self):
-        return get_or_create_cart(self.request)
+        cart = get_or_create_cart(self.request.user, self.request.COOKIES)
+        self.check_object_permissions(self.request, cart)
+        return cart
 
     def destroy(self, request, *args, **kwargs):
         cart = self.get_object()
@@ -23,18 +25,12 @@ class CartAPIView(generics.RetrieveDestroyAPIView):
         else:
             self.perform_destroy(cart)
         return Response({"detail": "Корзина очищена"},
-                        status=status.HTTP_204_NO_CONTENT)
-
-    def retrieve(self, request, *args, **kwargs):
-        if request.user.is_authenticated and "cart_id" in request.COOKIES:
-            synchronize_carts(request)
-        return super().retrieve(request, *args, **kwargs)
+                        status=status.HTTP_200_OK)
 
 
 class CartItemAPIView(generics.UpdateAPIView,
                       generics.CreateAPIView):
     queryset = CartItem.objects.select_related("cart").all()
-    permission_classes = [IsCartOwner]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -44,7 +40,11 @@ class CartItemAPIView(generics.UpdateAPIView,
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context["request"] = self.request
-        context["request"].cart = get_or_create_cart(self.request)
+        
+        if self.request.method == "POST":
+            context["request"].cart = get_or_create_cart(self.request.user,
+                                                        self.request.COOKIES)
+        
         return context
     
     def partial_update(self, request, *args, **kwargs):
