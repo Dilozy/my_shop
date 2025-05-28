@@ -1,5 +1,6 @@
 import pytest
 from model_bakery import baker
+from rest_framework.test import APIRequestFactory
 
 from cart.models import Cart, CartItem
 from goods.models import Product
@@ -18,3 +19,8 @@ def test_user_cart(test_user):
         CartItem.objects.get_or_create(cart=cart, product=product)
     
     return cart
+
+
+@pytest.fixture
+def factory():
+    return APIRequestFactory()

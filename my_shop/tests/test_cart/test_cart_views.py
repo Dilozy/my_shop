@@ -1,9 +1,7 @@
 from unittest.mock import patch
 
 import pytest
-from model_bakery import baker
 from django.urls import reverse
-from rest_framework.test import APIRequestFactory
 from django.contrib.auth import get_user_model
 
 from cart import views
@@ -11,15 +9,9 @@ from cart.models import Cart, CartItem
 from cart.serializers import (
     CartSerializer, CartAddItemSerializer, CartReduceItemQuantitySerializer
 )
-from goods.models import Product
 
 
 User = get_user_model()
-
-
-@pytest.fixture
-def factory():
-    return APIRequestFactory()
 
 
 @pytest.mark.django_db
@@ -126,16 +118,8 @@ class TestCartAPIView:
             )
             assert response.status_code == 403
     
-    def test_carts_synchronization(self, api_client, test_user):
-        cart = Cart.objects.create(user=test_user)
-        
-        product = baker.make(
-            Product,
-            id=11,
-            _quantity=1
-        )
-
-        CartItem.objects.create(cart=cart, product=product[0])
+    def test_carts_synchronization(self, api_client, test_user, test_user_cart):
+        cart_item_1_id = test_user_cart.items.order_by().first().product.pk
         
         response = api_client.get(
             self.endpoint
@@ -147,7 +131,7 @@ class TestCartAPIView:
         for _ in range(2):
             add_item_response = api_client.post(
                 reverse("cart:cart_items"),
-                data={"product_id": 11},
+                data={"product_id": cart_item_1_id},
                 format="json"
             )
 
@@ -155,7 +139,7 @@ class TestCartAPIView:
         
         add_item_response_data = add_item_response.json()
         assert "product_id" in add_item_response_data
-        assert add_item_response_data["product_id"] == 11
+        assert add_item_response_data["product_id"] == cart_item_1_id
         
         credentials = {"username": test_user.username,
                        "password": "test_password"}
@@ -178,7 +162,8 @@ class TestCartAPIView:
         )
 
         assert authorized_response.status_code == 200
-        assert cart.items.filter(product__pk=11).first().quantity == 3
+        assert test_user_cart.items.filter(product__pk=cart_item_1_id) \
+                                   .first().quantity == 3
 
 
 @pytest.mark.django_db
@@ -252,4 +237,3 @@ class TestCartItemAPIView:
         test_user_cart.refresh_from_db()
         assert test_user_cart.items.filter(pk=cart_item_id_1.pk).first().quantity == 1
         assert not test_user_cart.items.filter(pk=cart_item_id_1.pk + 1).exists()
-
