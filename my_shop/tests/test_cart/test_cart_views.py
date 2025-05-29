@@ -213,23 +213,40 @@ class TestCartItemAPIView:
         else:
             assert not hasattr(context["request"], "cart")
 
-    def test_partial_update(self, test_user_cart, authorized_api_client):
-        cart_item_id_1 = CartItem.objects.select_related("product") \
-                                 .order_by("product__pk").first()
-        authorized_api_client.post(
+    def test_partial_update(self, api_client, test_user, test_user_cart):
+        credentials = {"username": test_user.username,
+                       "password": "test_password"}
+        
+        auth_response = api_client.post(
+            reverse("auth:obtain_jwt"),
+            data=credentials,
+            format="json"
+        )
+        
+        auth_response_data = auth_response.json()
+        api_client.credentials(
+            HTTP_AUTHORIZATION=f"Bearer {auth_response_data['access_token']}"
+        )
+        
+        cart_item_id_1 = test_user_cart.items.first()
+        response = api_client.post(
             self.post_endpoint,
             data={"product_id": cart_item_id_1.product.pk},
             format="json"
         )
-
+        assert auth_response.status_code == 201
+        assert not response.cookies["cart_id"].value
+        
         endpoint = self.get_patch_endpoint(pk=cart_item_id_1.pk)
-        response = authorized_api_client.patch(
-            endpoint
-        )
+
+        response = api_client.patch(endpoint)
+        
+        print("Response status:", response.status_code, "Data:", response.json())
+        print("Cart items after PATCH:", test_user_cart.items.all())
         assert response.status_code == 200
 
         endpoint = self.get_patch_endpoint(pk=cart_item_id_1.pk + 1)
-        response = authorized_api_client.patch(
+        response = api_client.patch(
             endpoint
         )
         assert response.status_code == 200

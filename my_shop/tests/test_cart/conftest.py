@@ -10,10 +10,8 @@ from goods.models import Product
 def test_user_cart(test_user):
     cart, _ = Cart.objects.get_or_create(user=test_user)
     
-    # Удаляем старые items если есть
     CartItem.objects.filter(cart=cart).delete()
     
-    # Создаем новые продукты и items
     products = baker.make(Product, _quantity=10)
     for product in products:
         CartItem.objects.get_or_create(cart=cart, product=product)

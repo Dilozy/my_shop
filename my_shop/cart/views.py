@@ -31,6 +31,7 @@ class CartAPIView(generics.RetrieveDestroyAPIView):
 class CartItemAPIView(generics.UpdateAPIView,
                       generics.CreateAPIView):
     queryset = CartItem.objects.select_related("cart").all()
+    permission_classes = [IsCartOwner]
 
     def get_serializer_class(self):
         if self.request.method == "POST":

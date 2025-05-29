@@ -7,8 +7,8 @@ class CartMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
-        
-        if request.user.is_authenticated and "cart_id" in request.COOKIES:
+
+        if request.user.is_authenticated and request.COOKIES.get("cart_id"):
             response.delete_cookie("cart_id")
         
         # Если пользователь аноним и нет корзины — создаём и ставим cookie
@@ -21,6 +21,5 @@ class CartMiddleware:
                 samesite="Lax",
                 max_age=86400
             )
-
         return response
     

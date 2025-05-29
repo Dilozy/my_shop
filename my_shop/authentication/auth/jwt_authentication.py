@@ -24,8 +24,7 @@ class JWTAuthentication(BaseAuthentication):
         payload = self.verify_token(token)
 
         user = self.get_user(payload)
-
-        if request.COOKIES["cart_id"]:
+        if user and request.COOKIES.get("cart_id"):
             synchronize_carts(user, request.COOKIES)
 
         return (user, None)

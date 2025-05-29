@@ -11,7 +11,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CartItem
-        fields = ["product", "quantity", "id"]
+        fields = ["id", "product", "quantity"]
 
 
 class CartAddItemSerializer(serializers.Serializer):
@@ -21,7 +21,7 @@ class CartAddItemSerializer(serializers.Serializer):
         try:
             product = Product.objects.get(pk=data["product_id"])
         except Product.DoesNotExist:
-            raise serializers.ValidationError("Продукт не найден")
+            raise serializers.ValidationError({"product_id": "Продукт не найден"})
         
         data["product"] = product
         return data
@@ -57,7 +57,7 @@ class CartReduceItemQuantitySerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if self.instance.quantity <= 0:
-            raise serializers.ValidationError("Товар уже отсутствует в корзине")
+            raise serializers.ValidationError({"error": "Товар уже отсутствует в корзине"})
         return data
 
     def update(self, instance, validated_data):
