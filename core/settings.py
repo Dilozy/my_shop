@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django_filters',
     'cart',
     'orders',
+    'celery'
 ]
 
 MIDDLEWARE = [
@@ -91,7 +92,7 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME'),
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': 'localhost' if DEBUG else os.getenv('DB_HOST'),
+        'HOST': os.getenv('DB_HOST'),
         'PORT': os.getenv('DB_PORT'),
     }
 }
@@ -165,7 +166,7 @@ REST_FRAMEWORK = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://localhost:6379/1',
+        'LOCATION': f'redis://{os.getenv("REDIS_HOST")}:6379/1',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             'PASSWORD': os.getenv('REDIS_PASSWORD')
@@ -174,7 +175,7 @@ CACHES = {
 }
 
 # Celery settings
-RABBITMQ_USER = os.getenv('RABBIT_USER')
-RABBITMQ_PW = os.getenv('RABBIT_PASS')
-CELERY_BROKER_URL = f'amqp://{RABBITMQ_USER}:{RABBITMQ_PW}@rabbitmq:5672/'
-CELERY_RESULT_BACKEND = f'redis://{os.getenv("REDIS_HOST")}:6379/0'
+RABBIT_USER = os.getenv('RABBIT_USER')
+RABBIT_PASS = os.getenv('RABBIT_PASS')
+CELERY_BROKER_URL = f'amqp://{RABBIT_USER}:{RABBIT_PASS}@rabbitmq:5672//'
+CELERY_RESULT_BACKEND = f'redis://:{os.getenv("REDIS_PASSWORD")}@{os.getenv("REDIS_HOST")}:6379/0'

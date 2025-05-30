@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from .models import Order, OrderItem
 from goods.serializers import ProductSerializer
-from .services import send_order_email
+from .tasks import send_order_email
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -67,8 +67,8 @@ class CreateOrderSerializer(serializers.ModelSerializer):
     
     def save(self):
         self.instance = self.create(self.validated_data)
-        send_order_email.delay(self.instance,
-                               self.context["request"].user)
+        send_order_email.delay(self.instance.id,
+                               self.context["request"].user.email)
         return self.instance
 
     class Meta:

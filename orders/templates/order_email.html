@@ -47,7 +47,6 @@
       <p>Ваш заказ № <strong>{{ order.id }}</strong> был успешно оформлен {{ order.created|date:"d.m.Y H:i" }}.</p>
       <p><strong>Адрес доставки:</strong> {{ order.address }}, {{ order.city }}</p>
       <p><strong>Текущий статус:</strong> {{ order.get_status_display }}</p>
-      <p><strong>Оплачен:</strong> {{ order.paid|yesno:"Да,Нет" }}</p>
     </div>
 
     <div class="footer">
