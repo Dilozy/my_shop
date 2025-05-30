@@ -91,7 +91,7 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME'),
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
+        'HOST': 'localhost' if DEBUG else os.getenv('DB_HOST'),
         'PORT': os.getenv('DB_PORT'),
     }
 }
@@ -172,3 +172,9 @@ CACHES = {
         }
     }
 }
+
+# Celery settings
+RABBITMQ_USER = os.getenv('RABBIT_USER')
+RABBITMQ_PW = os.getenv('RABBIT_PASS')
+CELERY_BROKER_URL = f'amqp://{RABBITMQ_USER}:{RABBITMQ_PW}@rabbitmq:5672/'
+CELERY_RESULT_BACKEND = f'redis://{os.getenv("REDIS_HOST")}:6379/0'

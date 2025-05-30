@@ -58,5 +58,8 @@ def synchronize_carts(user, cookies):
     guest_cart.delete()
 
 
-def clear_cart(cart):
-    CartItem.objects.filter(cart=cart).delete()
+def clear_cart(cart, is_authenticated):
+    if is_authenticated:
+        CartItem.objects.filter(cart=cart).delete()
+    else:
+        cart.delete()

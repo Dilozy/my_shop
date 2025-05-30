@@ -33,5 +33,6 @@ urlpatterns = [
     path('api/v1/users/', include('user_account.urls', namespace='users')),
     path('api/v1/auth/', include('authentication.urls', namespace='auth')),
     path('api/v1/', include('goods.urls', namespace='goods')),
-    path('api/v1/', include('cart.urls', namespace='cart'))
+    path('api/v1/', include('cart.urls', namespace='cart')),
+    path('api/v1/my-orders/', include('orders.urls', namespace='orders')),
 ]

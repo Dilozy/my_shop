@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Подтверждение заказа</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f7;
+      margin: 0;
+      padding: 0;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: 30px auto;
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .header h1 {
+      text-align: center;
+      color: #007BFF;
+    }
+    .order-details {
+      margin-top: 20px;
+    }
+    .order-details p {
+      line-height: 1.6;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 14px;
+      text-align: center;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>Спасибо за ваш заказ!</h1>
+    </div>
+
+    <div class="order-details">
+      <p>Здравствуйте, {{ order.first_name }} {{ order.last_name }}!</p>
+      <p>Ваш заказ № <strong>{{ order.id }}</strong> был успешно оформлен {{ order.created|date:"d.m.Y H:i" }}.</p>
+      <p><strong>Адрес доставки:</strong> {{ order.address }}, {{ order.city }}</p>
+      <p><strong>Текущий статус:</strong> {{ order.get_status_display }}</p>
+      <p><strong>Оплачен:</strong> {{ order.paid|yesno:"Да,Нет" }}</p>
+    </div>
+
+    <div class="footer">
+      <p>Если у вас возникли вопросы, свяжитесь с нами по адресу <a href="mailto:support@example.com">support@example.com</a>.</p>
+      <p>С уважением, команда ExampleStore</p>
+    </div>
+  </div>
+</body>
+</html>

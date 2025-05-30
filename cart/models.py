@@ -18,7 +18,7 @@ class Cart(models.Model):
     @property
     def total_price(self):
         return sum(
-            item.product.price * item.quantity
+            item.cost
             for item in self.items.select_related("product").all()
         )
 
@@ -26,4 +26,8 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+
+    @property
+    def cost(self):
+        return self.quantity * self.product.price
 

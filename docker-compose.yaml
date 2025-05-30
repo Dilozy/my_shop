@@ -11,5 +11,53 @@ services:
       - redis-data:/data
     command: redis-server --requirepass ${REDIS_PASSWORD}
 
+  rabbitmq:
+    container_name: rabbitmq_container
+    image: rabbitmq:3-management
+    ports:
+     - "5672:5672"
+     - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: $RABBIT_USER
+      RABBITMQ_DEFAULT_PASS: $RABBIT_PASS
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+  app:
+    build: .
+    container_name: app_container
+    command: python /my_shop/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/usr/src/app/
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  celery:
+    build: .
+    container_name: worker_container
+    command: python -m celery -A my_shop worker --loglevel=info
+    volumes:
+      - .:/usr/src/app/
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  postgres:
+    image: postgres
+    container_name: postgres_container1
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: $DB_USER
+      POSTGRES_PASSWORD: $DB_PASSWORD
+      POSTGRES_DB: $DB_NAME
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
 volumes:
   redis-data:
+  rabbitmq_data:
+  postgres_data:

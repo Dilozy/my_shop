@@ -20,10 +20,9 @@ class CartAPIView(generics.RetrieveDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         cart = self.get_object()
-        if request.user.is_authenticated:
-            clear_cart(cart)
-        else:
-            self.perform_destroy(cart)
+        clear_cart(cart,
+                    is_authenticated=request.user.is_authenticated)
+
         return Response({"detail": "Корзина очищена"},
                         status=status.HTTP_200_OK)
 

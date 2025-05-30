@@ -13,11 +13,15 @@ class Order(models.Model):
         PACKING = "packing", "В сборке"
         DELIVERING = "delivering", "Доставляется"
         COMPLETED = "completed", "Выполнен"
-    
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4,
-                          editable=False)
+    order_uuid = models.UUIDField(default=uuid.uuid4, unique=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
+                             on_delete=models.CASCADE,
+                             related_name="my_orders",
+                             verbose_name="Пользователь",
+                             null=True, blank=True)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    email = models.EmailField()
     address = models.TextField(verbose_name="Адрес")
     city = models.CharField(max_length=100,
                             verbose_name="Город")
@@ -36,6 +40,8 @@ class Order(models.Model):
         indexes = [
             models.Index(fields=["-created"])
         ]
+        verbose_name = "Заказ"
+        verbose_name_plural = "Заказы"
 
     def __str__(self):
         return f"Order: {self.id}"
@@ -43,7 +49,7 @@ class Order(models.Model):
     @property
     def total_cost(self):
         return sum(item.cost for item in self.items.all())
-    
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order,
